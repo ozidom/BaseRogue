@@ -1,0 +1,294 @@
+﻿@{
+    ViewBag.Title = "Base Rogue";
+}
+<script src="~/Scripts/jquery-1.8.2.js"></script>
+<script src="~/Scripts/jquery-ui-1.9.2.js"></script>
+
+<div id="canvasContainer">
+    <canvas  height="500" width="500" id="canvas" class="canvas" ></canvas>
+</div>
+<div id ="message" style="position:absolute;top:420px;left:0px" ></div>
+<div id ="display" style="position:absolute;top:450px;left:0px" ></div>
+
+
+
+<div id ="serverprocessingdisplay" class="serverprocessingdisplay"  >Syncing with game server...</div>
+
+<div id="dialog" class="IntroGameDiv">
+    <div id ="titleDiv"class="titleDiv" >
+        Enter Game Title Text Here
+    </div>
+        <div id="caption">
+         @BaseRogue.GameResource.IntroGameText
+        </div>
+
+        <div>
+        <input type="button" value="Continue" onclick="$('#dialog').hide(1000);" />
+        </div> 
+</div>
+<div id="gameWinScreen" class="GameOverDiv">
+    <div>
+          @BaseRogue.GameResource.GameWinText
+    </div>
+    <div style="position:absolute;vertical-align:bottom">   
+        <input type="button" value="OK" onclick="location.reload(true);" />
+    </div> 
+</div>
+<div id="gameLooseScreen" class="GameOverDiv">
+    <div id="gameLooseText">
+    </div>
+    <div style="position:absolute;vertical-align:bottom;z-index:50">   
+        <input type="button" value="Start again" onclick="location.reload(true);" />
+    </div> 
+</div>
+<div id="HowToPlayDiv" class="HowToPlayDiv">
+    <div>
+        @BaseRogue.GameResource.HelpText
+    </div>
+    <div style="position:absolute;vertical-align:bottom">
+        <input type="button" value="Close" onclick="$('#HowToPlayDiv').hide(1000);" />
+    </div> 
+</div>
+<div id="GameDiv" class="GameDiv" >
+</div>
+<div id ="menu" class="menu"  >
+      <input type="button" value="?" onclick="$('#HowToPlayDiv').show(1000);" />
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var IsServerProcessing = false;
+        var currentJob = null;
+        var clickCount = 0;
+        var gameData;
+        
+        var displayMessage = new String();
+
+        var playerMoveDistance = 5;            //how far the spaceShip can move a turn (px)
+        var levelWidth = 500;                  //width of level in (px)
+        var levelHeight = 500;                 //height of level in (px)
+        var imageHeight = 20;                   //tile image height (px)
+        var imageWidth = 20;                    //tile image width (px)
+        var intersectionRange = 10;             //intersection with an object is  plus or minus this
+        var mouseDownXoffSet = 8;               //offset required to get an accurate X co-ord relative to the CANVAS
+        var mouseDownYoffSet = 9;               //offset required to get an accurate Yco-ord relative to the CANVAS
+        var SyncTurns = 10;                     //rounds before a sync occurs
+
+        $('#AboutDiv').hide();
+        $('#HowToPlayDiv').hide();
+        $('#BugsDiv').hide();
+        $('#gameLooseScreen').hide();
+        $('#gameWinScreen').hide();
+
+        var drawScreen = function () {
+            $('#gameDiv').show();
+            var loadedImages = 0;
+            var images = [];
+            var ctx = document.getElementById('canvas').getContext('2d');
+            ctx.fillStyle = "rgba(0,0,0,1)";
+            ctx.fillRect(0, 0, levelHeight, levelWidth);
+            var draw = function () {
+                for (i = 0; i < gameData.length; i++) {
+                    var item = gameData[i];
+                    ctx.drawImage(images[i], item.col, item.row, imageWidth, imageHeight);
+                };
+            };
+
+            if (gameData != null && gameData.length > 0) {
+                for (i = 0; i < gameData.length; i++) {
+                    var image = new Image();
+                    var item = gameData[i];
+                    image.addEventListener("load", function () {
+                        loadedImages++;
+                        if (loadedImages == gameData.length) {
+                            draw();
+                        }
+                    }, false);
+                    image.src = item.FileName;
+                    images.push(image);
+                }
+            }
+        };
+
+        var endGame = function (reason) {
+            $('#gameLooseText').text(reason);
+            callServer(null, '@Url.Action("ProcessEndGame","Home")', processEndGame, null)
+        };
+
+        //SYNC PROCESS SERVER RESPONSE METHOD
+        var processSyncData = function (data) {
+            gameData = data;
+            $('#serverprocessingdisplay').hide(1000);
+            IsServerProcessing = false;
+            drawScreen();
+        };
+
+        //SYNC PROCESS SERVER RESPONSE METHOD
+        var processEndGame = function (data) {
+            $('#serverprocessingdisplay').hide(1000);
+            $('#gameLooseScreen').show(1000);
+        };
+
+        //JOB REQUEST SERVER RESPONSE METHOD
+        var processJobData = function (data) {
+            jobs = data;
+            $('#GameDiv').text('');
+            $('#GameDiv').append("<div><b>Jobs</b></div>");
+            $('#GameDiv').show(1000);
+            for (var i = 0; i < data.length; i++) {
+                var planet = getPlanetByID(jobs[i].DestinationID);
+                if (planet != null) {
+                    $('#serverprocessingdisplay').hide(1000);
+                    IsServerProcessing = false;
+
+                    jobString = jobs[i].Description + ":" + planet.Description;
+
+                    $('#GameDiv').append("<div> ID: " + i + " -" + jobString + "</div>");
+                }
+            }
+        };
+
+        var callServer = function (id, route, successFunction, commandObject) {
+            $('#serverprocessingdisplay').show(10);
+            IsServerProcessing = true;
+            $.ajax({
+                type: "POST",
+                url: route,
+                data: JSON.stringify(commandObject),
+                contentType: 'application/json',
+                success: successFunction
+            });
+        };
+
+        var getObjectByID = function (id) {
+            for (var i = 0; i < gameData.length - 1; i++) {
+                if (gameData[i].ID == id)
+                    return gameData[i];
+            }
+            return null;
+        };
+
+        var getObjectByCoords = function (x, y) {
+            for (var i = 0; i < gameData.length - 1; i++) {
+                if (gameData[i].col == x && gameData[i].row == y)
+                    return gameData[i];
+            }
+            return null;
+        };
+
+        //KEYBOARD HANDLER
+        var getKeyBoardAction = function (evt) {
+            var playerSpaceShip = gameData[0];
+            switch (evt.keyCode) {
+                case 70:
+                    //f
+                    break;
+                case 71:
+                    //g
+                    break;
+                case 65:
+                    if (playerSpaceShip.col - playerMoveDistance >= 0) {
+                        gameData[0].col -= playerMoveDistance;
+                        
+                    }
+                    break;
+                case 87:
+                    if (playerSpaceShip.row - playerMoveDistance >= 0) {
+                        gameData[0].row -= playerMoveDistance;
+                
+                    }
+                    break;
+                case 83:
+                    if (playerSpaceShip.col + playerMoveDistance < levelWidth) {
+                        gameData[0].col += playerMoveDistance;
+                   
+                    }
+                    break;
+                case 90:
+                    if (playerSpaceShip.row + playerMoveDistance < levelWidth - 20) {
+                        gameData[0].row += playerMoveDistance;
+                       
+                    }
+                    break;
+                case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57:
+                    //muerics 0-9
+                    break;
+                case 74:
+                    if (currentJob != null) {
+                        $('#GameDiv').text(currentJob.Description);
+                    }
+                    else {
+                        $('#GameDiv').text("You don't have a job");
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+           
+            $("GameDiv").text("");
+            $("#GameDiv").text(displayMessage);
+
+            //Game ove code
+
+        };
+
+
+        var doKeyDown = function (evt) {
+            if (!IsServerProcessing) {
+                var command = new String();
+                getKeyBoardAction(evt);
+
+                var random = Math.random() * 100;
+                if (currentJob != null && random <= currentJob.Risk)
+                    $('#gameLooseScreen').show(1000);
+
+                drawScreen();
+                if (clickCount++ > SyncTurns) {
+
+                    commandObject = { map: gameData };
+                    callServer(null, '@Url.Action("Sync","Home")', processSyncData, commandObject);
+                    clickCount = 0;
+                }
+
+
+            }
+        };
+
+        var intersect = function (firstX, firstY, secondX, secondY) {
+            if (firstX == secondX && firstY == secondY)
+                return true;
+
+            if ((Math.abs(firstX - secondX) <= intersectionRange) && (Math.abs(firstY - secondY) <= intersectionRange))
+                return true;
+
+            return false;
+        };
+
+        var action = "";
+        window.addEventListener('keydown', doKeyDown, true);
+
+
+        $("#canvas").mousedown(function (e) {
+            var fixedX = e.clientX - mouseDownXoffSet;
+            var fixedY = e.clientY - mouseDownYoffSet;
+            var collision = false;
+            //determine any intersections
+            for (var i = 0; i < gameData.length; i++) {
+                if (intersect(gameData[i].col, gameData[i].row, fixedX, fixedY)) {
+                    $("#GameDiv").text(gameData[i].Description);
+                    collision = true;
+                }
+            }
+            if (!collision)
+                $("#GameDiv").text("");
+        });
+        commandObject = { map: gameData };
+
+        callServer(null, '@Url.Action("Sync","Home")', processSyncData, commandObject);
+
+
+    });
+</script>
+

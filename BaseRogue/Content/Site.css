@@ -1,0 +1,197 @@
+﻿body {
+    font-size: .85em;
+    font-family: 'Comic Sans MS';
+    color: #FFFFFF;
+    background-color: #000000;
+}
+
+header, footer, nav, section {
+    display: block;
+}
+
+
+/* Styles for basic forms
+-----------------------------------------------------------*/
+fieldset {
+    border: 1px solid #ddd;
+    padding: 0 1.4em 1.4em 1.4em;
+    margin: 0 0 1.5em 0;
+}
+
+legend {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+textarea {
+    min-height: 75px;
+}
+
+.editor-label {
+    margin: 1em 0 0 0;
+}
+
+.editor-field {
+    margin: 0.5em 0 0 0;
+}
+
+
+/* Styles for validation helpers
+-----------------------------------------------------------*/
+.field-validation-error {
+    color: #f00;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+.input-validation-error {
+    border: 1px solid #f00;
+    background-color: #fee;
+}
+
+.validation-summary-errors {
+    font-weight: bold;
+    color: #f00;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+/*Misc Tags for SRR*/
+input {
+    border-style: none;
+    margin: 0;
+}
+
+.inputSibling {
+    float: left;
+}
+/*Image Classes for SRR*/
+.tileImage {
+    height: 20px;
+    width: 20px;
+}
+
+table {
+    border-spacing: 0px;
+    border-style: none;
+    line-height: 0;
+}
+
+.tile {
+    padding: 0px;
+    border: 0px;
+    vertical-align: bottom;
+}
+
+img {
+    display: grid;
+    border: 0px;
+}
+
+img {
+    height: 25px;
+    width: 29px;
+}
+/*Main display blocks for SRR*/
+.canvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 500px;
+    width: 500px;
+}
+
+.display {
+    position: absolute;
+    top: 450px;
+    left: 0px;
+}
+
+
+.titleDiv {
+    font-family: 'Comic Sans MS';
+    font-size: 20pt;
+
+}
+
+.serverprocessingdisplay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 20;
+    background-color: red;
+    font-size: 12pt;
+}
+
+.GameDiv {
+    position: absolute;
+    top: 500px;
+    left: 0px;
+    border: thick;
+    border-color: white;
+    color: white;
+    height: 150px;
+    width: 500px;
+    font-size: 8pt;
+    z-index: 20;
+    background-color: #000000;
+}
+
+.menu {
+    position: absolute;
+    top: 650px;
+    left:0px;
+    z-index: 12;
+}
+
+.HowToPlayDiv {
+   position: absolute;
+   background-color:black;
+    top: 500px;
+    left: 0px;
+    border:thick;
+    border-color:white;
+    color: yellow;
+    height: 150px;
+    width: 500px;
+    font-size: 8pt;
+    z-index:30;
+}
+.GameOverDiv {
+    background-color:black;
+    color:white;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 500px;
+    width: 500px;
+    z-index:13;
+}
+.IntroGameDiv {
+    background-color: black;
+    color: #00FF00;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 700px;
+    width: 500px;
+    z-index: 15;
+}
+.inputSibbling {
+    position: absolute;
+    top: 650px;
+    left: 0px;
+    background-color: #000066;
+    color: white;
+    z-index: 24;
+}
+input[type="button"] {
+    font-family: 'Comic Sans MS';
+     color: #00FF00;
+    color:yellow;
+    background-color:black;
+    border:solid;
+}
