@@ -248,7 +248,7 @@
                 if (clickCount++ > SyncTurns) {
 
                     commandObject = { map: gameData };
-                    callServer(null, '@Url.Action("Sync","Home")', processSyncData, commandObject);
+                    //callServer(null, '@Url.Action("Sync","Home")', processSyncData, commandObject);
                     clickCount = 0;
                 }
 

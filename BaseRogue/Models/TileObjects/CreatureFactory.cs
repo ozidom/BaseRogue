@@ -11,14 +11,11 @@ namespace BaseRogue.Models
     {
         public static Creature CreateCreature(int id, BaseRogue.Models.GameEnums.CreatureType type,int x,int y)
         {
-
             string description, imageFileName;
             CreateCreatureProperties(type, out description, out imageFileName);
 
             Creature c = new Creature(id, description, imageFileName,x,y);
             return c;
-            
-
         }
 
         private static void CreateCreatureProperties(BaseRogue.Models.GameEnums.CreatureType type, out string description, out string imageFileName)

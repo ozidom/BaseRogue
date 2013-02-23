@@ -123,9 +123,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BaseRogue\BaseRogue.csproj">
+    <ProjectReference Include="..\BaseRogue\LightningRogue.csproj">
       <Project>{EFEFB929-7273-483D-B6B9-CD575EC006D3}</Project>
-      <Name>BaseRogue</Name>
+      <Name>LightningRogue</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
