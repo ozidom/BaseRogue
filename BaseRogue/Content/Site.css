@@ -195,3 +195,17 @@ input[type="button"] {
     background-color:black;
     border:solid;
 }
+.debug
+{
+    position: absolute;
+   background-color:black;
+    top: 700px;
+    left: 0px;
+    border:thick;
+    border-color:white;
+    color: red;
+    height: 150px;
+    width: 500px;
+    font-size: 8pt;
+    z-index:30;
+}

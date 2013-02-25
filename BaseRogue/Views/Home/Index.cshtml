@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Base Rogue";
+    ViewBag.Title = "Lightning Rogue";
 }
 <script src="~/Scripts/jquery-1.8.2.js"></script>
 <script src="~/Scripts/jquery-ui-1.9.2.js"></script>
@@ -54,7 +54,9 @@
 <div id ="menu" class="menu"  >
       <input type="button" value="?" onclick="$('#HowToPlayDiv').show(1000);" />
 </div>
-
+<div id ="debug" class="debug"  >
+     
+</div>
 <script type="text/javascript">
     $(document).ready(function () {
 
@@ -64,10 +66,10 @@
         var gameData;
         
         var displayMessage = new String();
-
-        var playerMoveDistance = 5;            //how far the spaceShip can move a turn (px)
-        var levelWidth = 500;                  //width of level in (px)
-        var levelHeight = 500;                 //height of level in (px)
+        var playerObject = null;
+        var playerMoveDistance = 5;             //how far the player char can move a turn (px)
+        var levelWidth = 500;                   //width of level in (px)
+        var levelHeight = 500;                  //height of level in (px)
         var imageHeight = 20;                   //tile image height (px)
         var imageWidth = 20;                    //tile image width (px)
         var intersectionRange = 10;             //intersection with an object is  plus or minus this
@@ -109,6 +111,8 @@
                     images.push(image);
                 }
             }
+
+            $("img").append("<b>hi</b>");
         };
 
         var endGame = function (reason) {
@@ -128,25 +132,6 @@
         var processEndGame = function (data) {
             $('#serverprocessingdisplay').hide(1000);
             $('#gameLooseScreen').show(1000);
-        };
-
-        //JOB REQUEST SERVER RESPONSE METHOD
-        var processJobData = function (data) {
-            jobs = data;
-            $('#GameDiv').text('');
-            $('#GameDiv').append("<div><b>Jobs</b></div>");
-            $('#GameDiv').show(1000);
-            for (var i = 0; i < data.length; i++) {
-                var planet = getPlanetByID(jobs[i].DestinationID);
-                if (planet != null) {
-                    $('#serverprocessingdisplay').hide(1000);
-                    IsServerProcessing = false;
-
-                    jobString = jobs[i].Description + ":" + planet.Description;
-
-                    $('#GameDiv').append("<div> ID: " + i + " -" + jobString + "</div>");
-                }
-            }
         };
 
         var callServer = function (id, route, successFunction, commandObject) {
@@ -170,7 +155,7 @@
         };
 
         var getObjectByCoords = function (x, y) {
-            for (var i = 0; i < gameData.length - 1; i++) {
+            for (var i = 0; i < gameData.length; i++) {
                 if (gameData[i].col == x && gameData[i].row == y)
                     return gameData[i];
             }
@@ -188,26 +173,35 @@
                     //g
                     break;
                 case 65:
-                    if (playerSpaceShip.col - playerMoveDistance >= 0) {
-                        gameData[0].col -= playerMoveDistance;
+                    if (playerSpaceShip.col - playerMoveDistance >= 0 )
+                    {
+                        var newCol = gameData[0].col - playerMoveDistance;
+                        if (!intersectWithGameObjects(newCol,gameData[0].row))
+                            gameData[0].col -= playerMoveDistance;
                         
                     }
                     break;
-                case 87:
+                case 87://n
                     if (playerSpaceShip.row - playerMoveDistance >= 0) {
-                        gameData[0].row -= playerMoveDistance;
+                        var newRow = gameData[0].row - playerMoveDistance;
+                        if (!intersectWithGameObjects(gameData[0].col,newRow))
+                            gameData[0].row -= playerMoveDistance;
                 
                     }
                     break;
-                case 83:
+                case 83://e
                     if (playerSpaceShip.col + playerMoveDistance < levelWidth) {
-                        gameData[0].col += playerMoveDistance;
+                        var newCol = gameData[0].col + playerMoveDistance;
+                        if (!intersectWithGameObjects(newCol, gameData[0].row))
+                            gameData[0].col += playerMoveDistance;
                    
                     }
                     break;
-                case 90:
+                case 90://s
                     if (playerSpaceShip.row + playerMoveDistance < levelWidth - 20) {
-                        gameData[0].row += playerMoveDistance;
+                        var newRow = gameData[0].row + playerMoveDistance;
+                        if (!intersectWithGameObjects(gameData[0].col,newRow))
+                            gameData[0].row += playerMoveDistance;
                        
                     }
                     break;
@@ -230,31 +224,117 @@
             $("GameDiv").text("");
             $("#GameDiv").text(displayMessage);
 
-            //Game ove code
-
         };
 
+
+        var moveToObject = function (x,y,targetX, targetY,blocked) {
+            //find the x
+
+            // alert(firstObject.col + ":"null;
+            /*var moveObject = new Object();
+            moveObject.row = x;
+            moveObject.col = y;
+            var moved = false;
+            if (Math.abs(y - targetY) != 0) {
+                moved = true;
+                if (y - targetY > 0) {//object are south of target
+                    if (blocked)
+                        moveObject.row = y + playerMoveDistance;
+                    else
+                        moveObject.row = y - playerMoveDistance;
+                }
+                else {
+                    if (blocked)
+                        moveObject.row = y - playerMoveDistance;
+                    else
+                        moveObject.row = y + playerMoveDistance;
+                }
+
+            }
+            else if (Math.abs(x - targetX) != 0) {
+                if (x - targetX > 0) {//east of target
+                    if (blocked)
+                        moveObject.col = x + playerMoveDistance;
+                    else
+                        moveObject.col = x - playerMoveDistance;
+                }
+                else {
+                    if (blocked)
+                        moveObject.col = x - playerMoveDistance;
+                    else
+                        moveObject.col = x + playerMoveDistance;
+                }
+            }*/
+            var moveObject = new Object();
+            moveObject.row = y;
+            moveObject.col = x;
+            //var moved = false;
+            if (x - targetX != 0) {
+                //moved = true;
+                if (x - targetX > 0)
+                    moveObject.col = x - playerMoveDistance;
+                else
+                    moveObject.col = x + playerMoveDistance;
+
+            }
+            else {
+                if (y - targetY > 0)
+                    moveObject.row = y - playerMoveDistance;
+                else
+                    moveObject.row = y + playerMoveDistance;
+            }
+            return moveObject;
+        }
+
+        var takeComputerActions = function () {
+            $("#debug").text("");
+            for (var i = 1; i < gameData.length; i++) {
+      
+                if (gameData[i].canMove) {
+                    var tempMoveObject = moveToObject(gameData[i].col,gameData[i].row, 
+                                                      gameData[0].col,gameData[0].row,
+                                                      gameData[i].blocked);
+
+                    if (!intersectWithGameObjects(tempMoveObject.col, tempMoveObject.row, i)) {
+                        gameData[i].row = tempMoveObject.row;
+                        gameData[i].col = tempMoveObject.col;
+                        //gameData[i].blocked = false;
+                    }
+                    else {
+                        //gameData[i].blocked = true;
+                    }
+                }
+            }
+        }
 
         var doKeyDown = function (evt) {
             if (!IsServerProcessing) {
                 var command = new String();
+                var isGameOver = false;
+
+                //Player Actions
                 getKeyBoardAction(evt);
 
-                var random = Math.random() * 100;
-                if (currentJob != null && random <= currentJob.Risk)
+                //AI 
+                takeComputerActions();
+                
+                //Check if the game is over
+                if (isGameOver)
                     $('#gameLooseScreen').show(1000);
 
+                //Now draw screen
                 drawScreen();
+
+                //Sync with game server
                 if (clickCount++ > SyncTurns) {
 
                     commandObject = { map: gameData };
                     //callServer(null, '@Url.Action("Sync","Home")', processSyncData, commandObject);
                     clickCount = 0;
-                }
-
-
+                }  
             }
         };
+
 
         var intersect = function (firstX, firstY, secondX, secondY) {
             if (firstX == secondX && firstY == secondY)
@@ -263,6 +343,22 @@
             if ((Math.abs(firstX - secondX) <= intersectionRange) && (Math.abs(firstY - secondY) <= intersectionRange))
                 return true;
 
+            return false;
+        };
+
+        var intersectWithGameObjects = function (firstX, firstY,index) {
+           
+            for(var i=1; i<gameData.length;i++)
+            {
+                var obj = gameData[i];
+                if (obj != null && i != index && intersect(obj.col, obj.row, firstX, firstY)) {
+                    $("#debug").append("<div>found check : " + obj.col + ":" + obj.row + "</div>")
+                    return true;
+                }
+                //$("#debug").append("<div>Intersect check : " + obj.col + ":" + obj.row + "</div>");
+            }
+           
+           
             return false;
         };
 

@@ -20,7 +20,7 @@ namespace BaseRogue.Models.TileObjects
 
         public Tile GetTile()
         {
-            Tile t = new Tile { row = Y, col = X, ID = ID, Description = this.Description,FileName = fileName };
+            Tile t = new Tile { row = Y, col = X, ID = ID, Description = this.Description,FileName = fileName,canMove=true,blocked=false };
             return t;
         }
 
